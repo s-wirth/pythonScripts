@@ -13,22 +13,28 @@ def blurImage(file, dirName = ''):
     """Blurs an image using Gaussian blur."""
     filePath = file
     blurName = ''
+    blurDir = 'blurred/'
     if dirName != '':
         if dirName[-1] != '/':
             dirName += '/'
         filePath = dirName + file
-        blurName = dirName + file.split(".")[0] + '_blurred' + '.jpg'
+        blurName = dirName + blurDir + file.split(".")[0] + '_blurred' + '.jpg'
     else:
-        blurName = file.split(".")[0] + '_blurred' + '.jpg'
+        blurName =  blurDir + file.split(".")[0] + '_blurred' + '.jpg'
     
     img = cv2.imread(cv2.samples.findFile(filePath))
 
     if img is None:
-        sys.exit("Could not read the image.")
-    else:
-        blur = cv2.GaussianBlur(img, (451, 451), 0)
-        cv2.imwrite(blurName, blur)
-        print('Blurred image saved as: ' + blurName)
+        sys.exit("Could not read the image: " + filePath)
+        return
+    
+    if not os.path.exists(dirName + blurDir):
+        os.makedirs(dirName + blurDir)
+        print('Created directory for blurred images: ' + dirName + blurDir)
+    
+    blur = cv2.GaussianBlur(img, (451, 451), 0)
+    cv2.imwrite(blurName, blur)
+    print('Blurred image saved as: ' + blurName)
     return
     
 def blurAllImages(dirName):
@@ -44,6 +50,53 @@ def blurAllImages(dirName):
         blurImage(fileName, dirName)
     return
 
+def resizeImage(file, newHeight = 0, newWidth = 0, dirName = ''):
+    """Resizes an image. If no height or width is given, the image is resized to height 1000 and width/height ratio."""
+    filePath = file
+    resizeDir = 'resized/'
+    if dirName != '':
+        if dirName[-1] != '/':
+            dirName += '/'
+        filePath = dirName  + file
+        resizeName = dirName + resizeDir + file.split(".")[0] + '.jpg'
+    else:
+        resizeName = resizeDir + file.split(".")[0] + '.jpg'
+    
+    img = cv2.imread(cv2.samples.findFile(filePath))
+
+    if img is None:
+        sys.exit("Could not read the image: " + filePath)
+        return
+    
+    if not os.path.exists(dirName + resizeDir):
+        os.makedirs(dirName + resizeDir)
+        print('Created directory for resized images: ' + dirName + resizeDir)
+    
+    imgHeight, imgWidth = img.shape[:2]
+    if newHeight == 0 and newWidth == 0:
+        newHeight = 1000
+        newWidth = int(newHeight * imgWidth / imgHeight)
+    if newHeight != 0 and newWidth == 0:
+        newWidth = int(newHeight * imgWidth / imgHeight)
+    if newHeight == 0 and newWidth != 0:
+        newHeight = int(newWidth * imgHeight / imgWidth)
+    resize = cv2.resize(img, (newWidth, newHeight))
+    cv2.imwrite(resizeName, resize)
+    print('Resized image saved as: ' + resizeName)
+    return
+
+def resizeAllImages(dirName):
+    """Creates a resized image for each image in the directory."""
+    if dirName[-1] != '/':
+        dirName += '/'
+    print('Resizing all images in directory: ' + dirName)
+    files = []
+    [files.extend(glob.glob(dirName + '*.' + e)) for e in _EXTENSIONS_]
+    for file in files:
+        print('Resizing image: ' + file)
+        fileName = os.path.basename(file)
+        resizeImage(fileName, 0, 0, dirName)
+    return
 #######################################################################
 # Find and Display Functions                                  
 #######################################################################
