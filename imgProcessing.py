@@ -1,25 +1,47 @@
 import cv2
 import sys
+import os
 import inspect
+import glob
+
+_EXTENSIONS_ = ["jpg", "png", "jpeg", "JPG", "PNG", "JPEG"]
 
 #######################################################################
 # Image Processing Functions                                  
 #######################################################################
-def blurImage(file):
+def blurImage(file, dirName = ''):
     """Blurs an image using Gaussian blur."""
-    img = cv2.imread(cv2.samples.findFile(file))
+    filePath = file
+    blurName = ''
+    if dirName != '':
+        if dirName[-1] != '/':
+            dirName += '/'
+        filePath = dirName + file
+        blurName = dirName + file.split(".")[0] + '_blurred' + '.jpg'
+    else:
+        blurName = file.split(".")[0] + '_blurred' + '.jpg'
+    
+    img = cv2.imread(cv2.samples.findFile(filePath))
 
     if img is None:
         sys.exit("Could not read the image.")
     else:
-        imgName = file.split(".")[0]
-        blurName = 'blurred_' + imgName + '.jpg'
         blur = cv2.GaussianBlur(img, (451, 451), 0)
         cv2.imwrite(blurName, blur)
+        print('Blurred image saved as: ' + blurName)
     return
     
 def blurAllImages(dirName):
     """Creates a blurred image using Gaussian blur for each image in the directory."""
+    if dirName[-1] != '/':
+        dirName += '/'
+    print('Blurring all images in directory: ' + dirName)
+    files = []
+    [files.extend(glob.glob(dirName + '*.' + e)) for e in _EXTENSIONS_]
+    for file in files:
+        print('Blurring image: ' + file)
+        fileName = os.path.basename(file)
+        blurImage(fileName, dirName)
     return
 
 #######################################################################
