@@ -21,31 +21,31 @@ def blurImage(file, dirName = ''):
         blurName = dirName + blurDir + file.split(".")[0] + '_blurred' + '.jpg'
     else:
         blurName =  blurDir + file.split(".")[0] + '_blurred' + '.jpg'
-    
+
     img = cv2.imread(cv2.samples.findFile(filePath))
 
     if img is None:
-        sys.exit("Could not read the image: " + filePath)
+        sys.exit(f"Could not read the image: {filePath}")
         return
-    
+
     if not os.path.exists(dirName + blurDir):
         os.makedirs(dirName + blurDir)
-        print('Created directory for blurred images: ' + dirName + blurDir)
-    
+        print(f'Created directory for blurred images: {dirName}{blurDir}')
+
     blur = cv2.GaussianBlur(img, (451, 451), 0)
     cv2.imwrite(blurName, blur)
-    print('Blurred image saved as: ' + blurName)
+    print(f'Blurred image saved as: {blurName}')
     return
     
 def blurAllImages(dirName):
     """Creates a blurred image using Gaussian blur for each image in the directory."""
     if dirName[-1] != '/':
         dirName += '/'
-    print('Blurring all images in directory: ' + dirName)
+    print(f'Blurring all images in directory: {dirName}')
     files = []
-    [files.extend(glob.glob(dirName + '*.' + e)) for e in _EXTENSIONS_]
+    [files.extend(glob.glob(f'{dirName}*.{e}')) for e in _EXTENSIONS_]
     for file in files:
-        print('Blurring image: ' + file)
+        print(f'Blurring image: {file}')
         fileName = os.path.basename(file)
         blurImage(fileName, dirName)
     return
@@ -61,17 +61,17 @@ def resizeImage(file, newHeight = 0, newWidth = 0, dirName = ''):
         resizeName = dirName + resizeDir + file.split(".")[0] + '.jpg'
     else:
         resizeName = resizeDir + file.split(".")[0] + '.jpg'
-    
+
     img = cv2.imread(cv2.samples.findFile(filePath))
 
     if img is None:
-        sys.exit("Could not read the image: " + filePath)
+        sys.exit(f"Could not read the image: {filePath}")
         return
-    
+
     if not os.path.exists(dirName + resizeDir):
         os.makedirs(dirName + resizeDir)
-        print('Created directory for resized images: ' + dirName + resizeDir)
-    
+        print(f'Created directory for resized images: {dirName}{resizeDir}')
+
     imgHeight, imgWidth = img.shape[:2]
     if newHeight == 0 and newWidth == 0:
         newHeight = 1000
@@ -82,18 +82,18 @@ def resizeImage(file, newHeight = 0, newWidth = 0, dirName = ''):
         newHeight = int(newWidth * imgHeight / imgWidth)
     resize = cv2.resize(img, (newWidth, newHeight))
     cv2.imwrite(resizeName, resize)
-    print('Resized image saved as: ' + resizeName)
+    print(f'Resized image saved as: {resizeName}')
     return
 
 def resizeAllImages(dirName):
     """Creates a resized image for each image in the directory."""
     if dirName[-1] != '/':
         dirName += '/'
-    print('Resizing all images in directory: ' + dirName)
+    print(f'Resizing all images in directory: {dirName}')
     files = []
-    [files.extend(glob.glob(dirName + '*.' + e)) for e in _EXTENSIONS_]
+    [files.extend(glob.glob(f'{dirName}*.{e}')) for e in _EXTENSIONS_]
     for file in files:
-        print('Resizing image: ' + file)
+        print(f'Resizing image: {file}')
         fileName = os.path.basename(file)
         resizeImage(fileName, 0, 0, dirName)
     return
@@ -102,11 +102,13 @@ def resizeAllImages(dirName):
 #######################################################################
 
 def _get_local_functions():
-    local_functions = {}
-    for name, obj in inspect.getmembers(sys.modules[__name__]):
-        if inspect.isfunction(obj) and not name.startswith('_') and obj.__module__ == __name__:
-            local_functions[name] = obj
-    return local_functions
+    return {
+        name: obj
+        for name, obj in inspect.getmembers(sys.modules[__name__])
+        if inspect.isfunction(obj)
+        and not name.startswith('_')
+        and obj.__module__ == __name__
+    }
 
 
 def _list_functions(script_name):
