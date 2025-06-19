@@ -1,65 +1,18 @@
 import cv2
+import numpy as np
 import sys
 import os
 import inspect
 import glob
+import random as rng
+
+rng.seed(12345)
 
 _EXTENSIONS_ = ["jpg", "png", "jpeg", "JPG", "PNG", "JPEG"]
 
 #######################################################################
 # Image Processing Functions                                  
 #######################################################################
-
-def contourImage(file, dirName = ''):
-    """Contours an image."""
-    filePath = file
-    contouredFileName = ''
-    contourFileSuffix = '_contoured'
-    contouredDir = 'contoured/'
-    if dirName != '':
-        if dirName[-1] != '/':
-            dirName += '/'
-        filePath = dirName + file
-        contouredFileName = dirName + contouredDir + file.split(".")[0] + contourFileSuffix + '.jpg'
-    else:
-        contouredFileName =  contouredDir + file.split(".")[0] + contourFileSuffix + '.jpg'
-    
-
-    if not os.path.exists(dirName + contouredDir):
-        os.makedirs(dirName + contouredDir)
-        print(f'Created directory for blurred images: {dirName}{contouredDir}')
-
-    # Load the pathToImage
-    image = cv2.imread(filePath)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (13,13), 0)
-    thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-
-    # Two pass dilate with horizontal and vertical kernel
-    horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9,5))
-    dilate = cv2.dilate(thresh, horizontal_kernel, iterations=2)
-    vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,9))
-    dilate = cv2.dilate(dilate, vertical_kernel, iterations=2)
-
-    # Find contours, filter using contour threshold area, and draw rectangle
-    cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    for c in cnts:
-        area = cv2.contourArea(c)
-        if area > 20000:
-            x,y,w,h = cv2.boundingRect(c)
-            cv2.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 3)
-
-    cv2.imshow('image', image)
-    cv2.imshow('gray', gray)
-    cv2.imshow('blur', blur)
-    cv2.imshow('dilate', dilate)
-    cv2.imshow('thresh', thresh)
-    cv2.waitKey()
-
-    cv2.imwrite(contouredFileName, thresh)
-    print(f'Blurred image saved as: {contouredFileName}')
-    return
 
 
 def blurImage(file, dirName = ''):

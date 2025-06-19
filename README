@@ -1,0 +1,33 @@
+A place where I keep the Python Scripts I create to help me do things.
+
+Run 'python3 scriptName.py' to learn what functions are available.
+
+Example: 
+
+```
+>python3 imgProcessing.py
+
+Available functions in imgProcessing.py:
+
+#################   blurAllImages   #################
+arguments: dirName
+returns: Creates a blurred image using Gaussian blur for each image in the directory.
+Command: python3 imgProcessing.py blurAllImages <dirName>
+
+
+#################   blurImage   #################
+arguments: file dirName
+returns: Blurs an image using Gaussian blur.
+Command: python3 imgProcessing.py blurImage <file dirName>
+
+
+#################   resizeAllImages   #################
+arguments: dirName
+returns: Creates a resized image for each image in the directory.
+Command: python3 imgProcessing.py resizeAllImages <dirName>
+
+
+#################   resizeImage   #################
+arguments: file newHeight newWidth dirName
+returns: Resizes an image. If no height or width is given, the image is resized to height 1000 and width/height ratio.
+Command: python3 imgProcessing.py resizeImage <file newHeight newWidth dirName>```
