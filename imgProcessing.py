@@ -11,9 +11,74 @@ rng.seed(12345)
 _EXTENSIONS_ = ["jpg", "png", "jpeg", "JPG", "PNG", "JPEG"]
 
 #######################################################################
+# Helper Functions                                 
+#######################################################################
+def __ending_slash(path):
+    if path[-1] != '/':
+        path += '/'
+    return path
+
+def __check_directory(dirName):
+    return os.path.exists(__ending_slash(dirName))
+
+def __create_sub_directory(dirName):
+    if not __check_directory(dirName):
+        os.makedirs(dirName)
+        print(f'Created sub directory: {dirName}')
+    else:
+        print(f'Sub directory exists: {dirName}')
+        
+
+def __find_file(file):
+    print(f'Searching for file: {file}')
+    if os.path.exists(file):
+        print(f'File found: {file}')
+        return True
+    else:
+        print(f'File not found: {file}')
+        return False
+
+def __check_valid_image(file):
+    if __find_file(file) and file.split(".")[1] in _EXTENSIONS_:
+        print (f'File is a valid image: {file}')
+        return True
+    else:
+        print (f'File is not a valid image: {file}, only {", ".join(_EXTENSIONS_)} files are allowed.')
+        return False
+
+def __make_processing_file_name(file, sub_dir = '', suffix = '_processed', fileType = 'jpg'):
+    if sub_dir != '':
+        return __ending_slash(sub_dir) + file.split(".")[0] + suffix + '.' + fileType
+    return file.split(".")[0] + suffix + '.' + fileType
+
+def __prepare_image(file, dirName = '', suffix = '', fileType = 'jpg'):
+    if __check_valid_image(file):
+        return __make_processing_file_name(file, dirName, suffix, fileType)
+        
+    
+
+
+#######################################################################
 # Image Processing Functions                                  
 #######################################################################
+def contrastImage(file, dirName = '', fileType = 'jpg', showImage = False):
+    newImage = __prepare_image(file, dirName, suffix = '_contrast', fileType = fileType)
 
+    image = cv2.imread(cv2.samples.findFile(file))
+    alpha = 2.0 
+    beta = 0  
+    
+    new_image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+
+    if showImage:
+        cv2.imshow('Original Image', image)
+        cv2.imshow('New Image', new_image)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+
+    cv2.imwrite(newImage, new_image)
+    print(f'Contrasted image saved as: {newImage}')
+    return
 
 def blurImage(file, dirName = ''):
     """Blurs an image using Gaussian blur."""
