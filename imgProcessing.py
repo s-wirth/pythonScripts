@@ -61,6 +61,96 @@ def __prepare_image(file, dirName = '', suffix = '', fileType = 'jpg'):
 #######################################################################
 # Image Processing Functions                                  
 #######################################################################
+
+def findHoughLines(file, dirName = '', fileType = 'jpg', showImage = False):
+    newImage = __prepare_image(file, dirName, suffix = '_houghLines', fileType = fileType)
+
+    image = cv2.imread(cv2.samples.findFile(file))
+    edges = cv2.Canny(image,100,200)
+
+    lines = cv2.HoughLinesP(edges,1,np.pi/180,100,minLineLength=100,maxLineGap=10)
+    for line in lines:
+        x1, y1, x2, y2 = line[0]
+        cv2.line(image,(x1,y1),(x2,y2),(0,255,0),2)
+
+    if showImage:
+        cv2.imshow('Hough Lines', newImage)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+
+    cv2.imwrite(newImage, image)
+    print(f'Hough Lines image saved as: {newImage}')
+    return
+
+def findCorners(file, dirName = '', fileType = 'jpg', showImage = False):
+    newImage = __prepare_image(file, dirName, suffix = '_corners', fileType = fileType)
+
+    image = cv2.imread(cv2.samples.findFile(file))
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    gray = np.float32(gray)
+    dst = cv2.cornerHarris(gray,2,3,0.04)
+    
+    dst = cv2.dilate(dst,None)
+    
+    image[dst>0.01*dst.max()]=[0,0,255]
+    
+    if showImage:
+        cv2.imshow('Corners', newImage)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+
+    cv2.imwrite(newImage, image)
+    print(f'Corner image saved as: {newImage}')
+    return
+
+def getPaintingContour(file, dirName = '', fileType = 'jpg', showImage = False):
+    newImage = __prepare_image(file, dirName, suffix = '_contoured', fileType = fileType)
+
+    image = cv2.imread(cv2.samples.findFile(file))
+    contrast = cv2.convertScaleAbs(image, alpha=2.5, beta=-150)
+    gray = cv2.cvtColor(contrast, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray,(5,5),0)
+    # ret, thresh = cv2.threshold(blur, 200, 255, 0)
+    retval, thresh = cv2.threshold(blur, 0, 200, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    invert = cv2.bitwise_not(thresh)
+    dilate = cv2.dilate(thresh, None, iterations=1)
+    erode = cv2.erode(invert, None, iterations=1)
+    contours, hierarchy = cv2.findContours(dilate, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    image_area = image.shape[0] * image.shape[1]
+    for c in contours:
+        contArea = cv2.contourArea(c)
+        # Make sure we don't contour the whole image)
+        if contArea < image_area * 0.9:
+            for i in range(len(c)):
+                print(f'({c[i][0][0]}, {c[i][0][1]})')
+            cv2.drawContours(image, [c], -1, (0, 230, 0), 3)
+
+    # cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
+    cv2.imshow('contrast', contrast)
+    cv2.waitKey()
+    cv2.imshow('gray', gray)
+    cv2.waitKey()
+    cv2.imshow('blur', blur)
+    cv2.waitKey()
+    cv2.imshow('thresh', thresh)
+    cv2.waitKey()
+    cv2.imshow('dilate', dilate)
+    cv2.waitKey()
+    cv2.imshow('erode', erode)
+    cv2.waitKey()
+    cv2.imshow('image', image)
+    cv2.waitKey()
+
+    if showImage:
+        cv2.imshow('Painting Contour', contours)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
+
+    cv2.imwrite(newImage, image)
+    print(f'Painting Contour image saved as: {newImage}')
+    return
+
 def contrastImage(file, dirName = '', fileType = 'jpg', showImage = False):
     newImage = __prepare_image(file, dirName, suffix = '_contrast', fileType = fileType)
 
